@@ -2,9 +2,37 @@ import UIKit
 
 final class MovieQuizViewController: UIViewController {
     // MARK: - Lifecycle
+    @IBOutlet weak var indexLabel: UILabel!
+    @IBOutlet weak var previewImage: UIView!
+    @IBOutlet weak var quistonLabel: UILabel!
+
     override func viewDidLoad() {
         super.viewDidLoad()
+
     }
+    
+    
+    struct ViewModel {
+        let image: UIImage
+        let quistion: String
+        let quistionNumber: String
+    }
+    
+    struct QuizResultsViewModel {
+        let title: String
+        let text: String
+        let buttonText: String
+    }
+    
+    struct RespinseResultViewModel {
+        let isTrue: Bool
+    }
+    
+    
+    
+    
+
+    
 }
 
 /*
