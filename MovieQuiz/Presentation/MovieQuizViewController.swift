@@ -97,7 +97,7 @@ final class MovieQuizViewController: UIViewController {
             let text = "Правильных ответов - \(correctAnswer)/\(questions.count)"
            showAlert(quiz: QuizResultsViewModel(title: "Этот раунд окончен!",
                                                 text: text ,
-                                                buttonText: "Начать заново"))
+                                                buttonText: "Сыграть еще раз"))
         } else {
             previewImage.layer.borderWidth = 0
             currentQuestionIndex += 1
