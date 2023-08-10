@@ -84,6 +84,9 @@
                                                         <integer key="value" value="15"/>
                                                     </userDefinedRuntimeAttribute>
                                                 </userDefinedRuntimeAttributes>
+                                                <connections>
+                                                    <action selector="noButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="yca-K4-pYA"/>
+                                                </connections>
                                             </button>
                                             <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="b6a-gf-eUA">
                                                 <rect key="frame" x="206" y="0.0" width="184" height="60"/>
@@ -101,6 +104,9 @@
                                                         <integer key="value" value="15"/>
                                                     </userDefinedRuntimeAttribute>
                                                 </userDefinedRuntimeAttributes>
+                                                <connections>
+                                                    <action selector="yesButtonClicked:" destination="BYZ-38-t0r" eventType="touchUpInside" id="fST-dY-fI5"/>
+                                                </connections>
                                             </button>
                                         </subviews>
                                         <constraints>
@@ -126,7 +132,7 @@
                     </view>
                     <connections>
                         <outlet property="indexLabel" destination="2cx-1o-a6y" id="lCY-Zb-Fe1"/>
-                        <outlet property="previewImage" destination="lxJ-oe-EUW" id="xrN-3O-LZa"/>
+                        <outlet property="previewImage" destination="lxJ-oe-EUW" id="yxx-U3-Bke"/>
                         <outlet property="quistonLabel" destination="4qD-it-kLs" id="lcF-T9-PZi"/>
                     </connections>
                 </viewController>
