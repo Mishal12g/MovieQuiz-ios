@@ -6,6 +6,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private let questionsAmount: Int = 10
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
+    private var alertPresenterDelegate: AlertDelegate?
+    private var movie: Movie?
     
     @IBOutlet private weak var indexLabel: UILabel!
     @IBOutlet private weak var previewImage: UIImageView!
@@ -15,24 +17,41 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
         questionFactory = QuestionFactory(delegate: self)
-        
+        alertPresenterDelegate = AlertPresenter(delegate: self)
         questionFactory?.requestNextQuestion()
+        let fileManager = FileManager.default
+        var documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let fileName = "inception.json"
+        documentsURL.appendPathComponent(fileName)
+        let jsonString = try? String(contentsOf: documentsURL)
+        movie = getMovie(from: jsonString ?? "")
+        print(movie?.title)
     }
     
     // MARK: - QuestionFactoryDelegate
     
+    func getMovie(from jsonString: String) -> Movie? {
+        guard let data = jsonString.data(using: .utf8) else { return nil}
+        do {
+            let movie = try JSONDecoder().decode(Movie.self, from: data)
+            return movie
+        } catch {
+            print("Failed to parse: \(jsonString)")
+            return nil
+        }
+    }
+    
     func didReceiveNextQuestion(question: QuizQuestion?) {
         guard let question = question else {
-               return
-           }
-           
+            return
+        }
+        
         currentQuestion = question
-          let viewModel = convert(model: question)
-          DispatchQueue.main.async { [weak self] in
-              self?.show(quiz: viewModel)
-          }
+        let viewModel = convert(model: question)
+        DispatchQueue.main.async { [weak self] in
+            self?.show(quiz: viewModel)
+        }
     }
     
     @IBAction private func noButtonClicked(_ sender: Any) {
@@ -40,6 +59,18 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     @IBAction private func yesButtonClicked(_ sender: Any) {
+        var documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let fileName = "text.swift"
+        documentsURL.appendPathComponent(fileName)
+        if !FileManager.default.fileExists(atPath: documentsURL.path) {
+            let hello = "Hello world!"
+            let data = hello.data(using: .utf8)
+            FileManager.default.createFile(atPath: documentsURL.path, contents: data)
+        }
+        
+        
+        print(documentsURL)
+        try? print(String(contentsOf: documentsURL))
         answerGived(answer: true)
     }
     
@@ -91,22 +122,20 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func showAlert(quiz result: QuizResultsViewModel) {
-        let alert = UIAlertController(title: result.title,
-                                      message: result.text,
-                                      preferredStyle: .alert)
         
-        let action = UIAlertAction(title: result.buttonText, style: .default) {[weak self] _ in
-            guard let self = self else {return}
-            
+        let alertModel = AlertModel(title: result.title,
+                                    message: result.text,
+                                    buttonText: result.buttonText) {[weak self] in
+            guard let self = self else { return }
             self.currentQuestionIndex = 0
             self.correctAnswer = 0
             self.questionFactory?.requestNextQuestion()
-
             self.previewImage.layer.borderWidth = 0
         }
         
-        alert.addAction(action)
-        self.present(alert, animated: true, completion: nil)
+        alertPresenterDelegate?.show(model: alertModel)
+        
+        
     }
     
     private func answerGived(answer: Bool) {
@@ -124,56 +153,56 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
  Настоящий рейтинг: 9,2
  Вопрос: Рейтинг этого фильма больше чем 6?
  Ответ: ДА
-
-
+ 
+ 
  Картинка: The Dark Knight
  Настоящий рейтинг: 9
  Вопрос: Рейтинг этого фильма больше чем 6?
  Ответ: ДА
-
-
+ 
+ 
  Картинка: Kill Bill
  Настоящий рейтинг: 8,1
  Вопрос: Рейтинг этого фильма больше чем 6?
  Ответ: ДА
-
-
+ 
+ 
  Картинка: The Avengers
  Настоящий рейтинг: 8
  Вопрос: Рейтинг этого фильма больше чем 6?
  Ответ: ДА
-
-
+ 
+ 
  Картинка: Deadpool
  Настоящий рейтинг: 8
  Вопрос: Рейтинг этого фильма больше чем 6?
  Ответ: ДА
-
-
+ 
+ 
  Картинка: The Green Knight
  Настоящий рейтинг: 6,6
  Вопрос: Рейтинг этого фильма больше чем 6?
  Ответ: ДА
-
-
+ 
+ 
  Картинка: Old
  Настоящий рейтинг: 5,8
  Вопрос: Рейтинг этого фильма больше чем 6?
  Ответ: НЕТ
-
-
+ 
+ 
  Картинка: The Ice Age Adventures of Buck Wild
  Настоящий рейтинг: 4,3
  Вопрос: Рейтинг этого фильма больше чем 6?
  Ответ: НЕТ
-
-
+ 
+ 
  Картинка: Tesla
  Настоящий рейтинг: 5,1
  Вопрос: Рейтинг этого фильма больше чем 6?
  Ответ: НЕТ
-
-
+ 
+ 
  Картинка: Vivarium
  Настоящий рейтинг: 5,8
  Вопрос: Рейтинг этого фильма больше чем 6?
