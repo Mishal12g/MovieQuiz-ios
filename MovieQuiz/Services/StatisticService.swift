@@ -36,7 +36,7 @@ final class StatisticServiceImpl {
 extension StatisticServiceImpl: StatisticService {
     
     var totalAccuracy: Double {
-         Double(correct) / Double(total) * 100
+        Double(correct) / Double(total) * 100
     }
     
     
@@ -74,12 +74,9 @@ extension StatisticServiceImpl: StatisticService {
         get {
             guard let data = userDefaults.data(forKey: Keys.bestGame.rawValue),
             let record = try? decoder.decode(BestGame.self, from: data) else {
-                return .init(correct: 0, total: 0, date: Date())
+                return nil
             }
-            
             return record
-            
-            
         }
         
         set {
@@ -98,8 +95,8 @@ extension StatisticServiceImpl: StatisticService {
     }
     
     func store(correct count: Int, total amount: Int) {
-        self.correct += correct
-        self.total += total
+        self.correct += count
+        self.total += amount
         self.gamesCount += 1
         let date = dateProvider()
         
