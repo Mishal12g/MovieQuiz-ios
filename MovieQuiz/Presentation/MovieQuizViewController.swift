@@ -1,6 +1,17 @@
 import UIKit
 
 final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
+    
+    //MARK: - IB Outlets
+    @IBOutlet private weak var indexLabel: UILabel!
+    @IBOutlet private weak var quistonLabel: UILabel!
+    
+    @IBOutlet private weak var previewImage: UIImageView!
+    
+    @IBOutlet private weak var yesButtonOutlet: UIButton!
+    @IBOutlet private weak var noButtonOutlet: UIButton!
+    
+    //MARK: - Private Properties
     private var currentQuestionIndex = 0
     private var correctAnswer = 0
     private let questionsAmount: Int = 10
@@ -9,14 +20,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var alertPresenterDelegate: AlertDelegate?
     private var movie: Movie?
     private var statisticService: StatisticService?
- 
     
-    @IBOutlet private weak var indexLabel: UILabel!
-    @IBOutlet private weak var previewImage: UIImageView!
-    @IBOutlet private weak var quistonLabel: UILabel!
-    @IBOutlet private weak var yesButtonOutlet: UIButton!
-    @IBOutlet private weak var noButtonOutlet: UIButton!
-    
+    //MARK: Overrides Methods
     override func viewDidLoad() {
         super.viewDidLoad()
         questionFactory = QuestionFactory(delegate: self)
@@ -29,22 +34,22 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         documentsURL.appendPathComponent(fileName)
         let jsonString = try? String(contentsOf: documentsURL)
         movie = getMovie(from: jsonString ?? "")
-        print(movie?.title)
     }
     
-    // MARK: - QuestionFactoryDelegate
-    
-    func getMovie(from jsonString: String) -> Movie? {
-        guard let data = jsonString.data(using: .utf8) else { return nil}
-        do {
-            let movie = try JSONDecoder().decode(Movie.self, from: data)
-            return movie
-        } catch {
-            print("Failed to parse: \(jsonString)")
-            return nil
-        }
+    override var preferredStatusBarStyle: UIStatusBarStyle {
+        return .lightContent
     }
     
+    //IM Actions Methods
+    @IBAction private func noButtonClicked(_ sender: Any) {
+        answerGived(answer: false)
+    }
+    
+    @IBAction private func yesButtonClicked(_ sender: Any) {
+        answerGived(answer: true)
+    }
+    
+    //MARK: Public Methods
     func didReceiveNextQuestion(question: QuizQuestion?) {
         guard let question = question else {
             return
@@ -57,24 +62,18 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
     }
     
-    @IBAction private func noButtonClicked(_ sender: Any) {
-        answerGived(answer: false)
-    }
     
-    @IBAction private func yesButtonClicked(_ sender: Any) {
-        var documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let fileName = "text.swift"
-        documentsURL.appendPathComponent(fileName)
-        if !FileManager.default.fileExists(atPath: documentsURL.path) {
-            let hello = "Hello world!"
-            let data = hello.data(using: .utf8)
-            FileManager.default.createFile(atPath: documentsURL.path, contents: data)
+    //MARK: - Privates Methods
+    
+    private func getMovie(from jsonString: String) -> Movie? {
+        guard let data = jsonString.data(using: .utf8) else { return nil}
+        do {
+            let movie = try JSONDecoder().decode(Movie.self, from: data)
+            return movie
+        } catch {
+            print("Failed to parse: \(jsonString)")
+            return nil
         }
-        
-        
-        print(documentsURL)
-        try? print(String(contentsOf: documentsURL))
-        answerGived(answer: true)
     }
     
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
@@ -84,11 +83,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func show(quiz step: QuizStepViewModel) {
-        
         indexLabel.text = step.quistionNumber
         previewImage.image = step.image
         quistonLabel.text = step.quistion
-        
     }
     
     private func showAnswerResult(isCorrect: Bool) {
@@ -96,9 +93,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         yesButtonOutlet.isEnabled.toggle()
         if isCorrect { correctAnswer += 1 }
         previewImage.layer.masksToBounds = true
-        previewImage.layer.borderWidth = 6
+        previewImage.layer.borderWidth = 8
         previewImage.layer.borderColor = isCorrect ? UIColor.ypGreen.cgColor : UIColor.ypRed.cgColor
-        previewImage.layer.cornerRadius = 6
+        previewImage.layer.cornerRadius = 20
         
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
             guard let self = self else { return }
@@ -107,7 +104,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             self.noButtonOutlet.isEnabled.toggle()
             self.yesButtonOutlet.isEnabled.toggle()
         }
-        
     }
     
     private func showNextQuestionOrResults(){
@@ -116,7 +112,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         } else {
             previewImage.layer.borderWidth = 0
             currentQuestionIndex += 1
-            
             questionFactory?.requestNextQuestion()
         }
     }
@@ -126,17 +121,14 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         
         let alertModel = AlertModel(title: "Игра окончена!",
                                     message: makeResultMessage(),
-                                    buttonText:"Начать заново") {[weak self] in
+                                    buttonText:"Сыграть еще раз") {[weak self] in
             guard let self = self else { return }
             self.currentQuestionIndex = 0
             self.correctAnswer = 0
             self.questionFactory?.requestNextQuestion()
             self.previewImage.layer.borderWidth = 0
         }
-        
         alertPresenterDelegate?.show(model: alertModel)
-        
-        
     }
     
     private func makeResultMessage() -> String {
@@ -146,14 +138,13 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
         
         let totalPlaysCountLine = "Количество сыгранных квизов \(statisticService.gamesCount)"
-        let currentGameResultLine = "Ваш результат: \(correctAnswer)\\\(questionsAmount)"
-        let bestGameInfoLine = "Рекорд: \(bestGame.correct)\\\(bestGame.total)"
+        let currentGameResultLine = "Ваш результат: \(correctAnswer)/\(questionsAmount)"
+        let bestGameInfoLine = "Рекорд: \(bestGame.correct)/\(bestGame.total)"
         + " \(bestGame.date.dateTimeString)"
         let averageAccuracyLine = "Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))"
-        
         let resultMessage = [
             currentGameResultLine, totalPlaysCountLine, bestGameInfoLine, averageAccuracyLine].joined(separator: "\n")
-        
+
         return resultMessage
     }
     
