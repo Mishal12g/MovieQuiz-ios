@@ -4,7 +4,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     //MARK: - IB Outlets
     @IBOutlet private weak var indexLabel: UILabel!
-    @IBOutlet private weak var quistonLabel: UILabel!
+    @IBOutlet private weak var questionLabel: UILabel!
     
     @IBOutlet private weak var previewImage: UIImageView!
     
@@ -37,11 +37,11 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     //IM Actions Methods
     @IBAction private func noButtonClicked(_ sender: Any) {
-        answerGived(answer: false)
+        answerGiven(answer: false)
     }
     
     @IBAction private func yesButtonClicked(_ sender: Any) {
-        answerGived(answer: true)
+        answerGiven(answer: true)
     }
     
     //MARK: Public Methods
@@ -91,7 +91,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private func show(quiz step: QuizStepViewModel) {
         indexLabel.text = step.quistionNumber
         previewImage.image = step.image
-        quistonLabel.text = step.quistion
+        questionLabel.text = step.quistion
     }
     
     private func showAnswerResult(isCorrect: Bool) {
@@ -154,7 +154,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         return resultMessage
     }
     
-    private func answerGived(answer: Bool) {
+    private func answerGiven(answer: Bool) {
         guard let currentQuestion = currentQuestion else { return }
         let givenAnswer = answer
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
