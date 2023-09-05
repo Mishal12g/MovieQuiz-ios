@@ -125,7 +125,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private func showFinalResults() {
         statisticService?.store(correct: correctAnswer, total: questionsAmount)
         
-        let alertModel = AlertModel(title: "Игра окончена!",
+        let alertModel = AlertModel(title: "Этот раунд окончен!",
                                     message: makeResultMessage(),
                                     buttonText:"Сыграть еще раз") {[weak self] in
             guard let self = self else { return }
