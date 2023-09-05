@@ -28,12 +28,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         alertPresenterDelegate = AlertPresenter(delegate: self)
         statisticService = StatisticServiceImpl()
         questionFactory?.requestNextQuestion()
-        let fileManager = FileManager.default
-        var documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
-        let fileName = "inception.json"
-        documentsURL.appendPathComponent(fileName)
-        let jsonString = try? String(contentsOf: documentsURL)
-        movie = getMovie(from: jsonString ?? "")
+        getMovieData()
     }
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -64,6 +59,17 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     
     //MARK: - Privates Methods
+    
+    private func getMovieData() {
+        let fileManager = FileManager.default
+        var documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
+        let fileName = "inception.json"
+
+        documentsURL.appendPathComponent(fileName)
+        
+        let jsonString = try? String(contentsOf: documentsURL)
+        movie = getMovie(from: jsonString ?? "")
+    }
     
     private func getMovie(from jsonString: String) -> Movie? {
         guard let data = jsonString.data(using: .utf8) else { return nil}
