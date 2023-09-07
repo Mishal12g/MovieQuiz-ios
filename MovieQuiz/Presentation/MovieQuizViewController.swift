@@ -143,11 +143,11 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             return ""
         }
         
-        let totalPlaysCountLine = "Количество сыгранных квизов \(statisticService.gamesCount)"
+        let totalPlaysCountLine = "Количество сыгранных квизов: \(statisticService.gamesCount)"
         let currentGameResultLine = "Ваш результат: \(correctAnswer)/\(questionsAmount)"
         let bestGameInfoLine = "Рекорд: \(bestGame.correct)/\(bestGame.total)"
-        + " \(bestGame.date.dateTimeString)"
-        let averageAccuracyLine = "Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))"
+        + " (\(bestGame.date.dateTimeString))"
+        let averageAccuracyLine = "Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%"
         let resultMessage = [
             currentGameResultLine, totalPlaysCountLine, bestGameInfoLine, averageAccuracyLine].joined(separator: "\n")
 
