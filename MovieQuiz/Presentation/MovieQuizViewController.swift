@@ -10,6 +10,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     @IBOutlet private weak var yesButtonOutlet: UIButton!
     @IBOutlet private weak var noButtonOutlet: UIButton!
+    @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
     
     //MARK: - Private Properties
     private var currentQuestionIndex = 0
@@ -21,14 +22,17 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     private var movie: Movie?
     private var statisticService: StatisticService?
     
+    
     //MARK: Overrides Methods
     override func viewDidLoad() {
         super.viewDidLoad()
-        questionFactory = QuestionFactory(delegate: self)
+        previewImage.layer.cornerRadius = 20
+
+        questionFactory = QuestionFactory(delegate: self, moviesLoader: MoviesLoading())
         alertPresenterDelegate = AlertPresenter(delegate: self)
         statisticService = StatisticServiceImpl()
-        questionFactory?.requestNextQuestion()
-        getMovieData()
+        showLoadingIndicator()
+        questionFactory?.loadData()
     }
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -45,6 +49,16 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     //MARK: Public Methods
+    func didLoadDataFromServer() {
+        activityIndicator.isHidden = true
+        questionFactory?.requestNextQuestion()
+    }
+    
+    func didFailToLoadData(with error: Error) {
+        showNetworkError(message: error.localizedDescription)
+    }
+    
+    
     func didReceiveNextQuestion(question: QuizQuestion?) {
         guard let question = question else {
             return
@@ -60,11 +74,33 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     //MARK: - Privates Methods
     
+    private func showLoadingIndicator() {
+        activityIndicator.isHidden = false
+        activityIndicator.startAnimating()
+    }
+    
+    private func hideLoadingIndicator() {
+        activityIndicator.isHidden = true
+    }
+    
+    private func showNetworkError(message: String) {
+        hideLoadingIndicator()
+        let alertModel = AlertModel(title: "Ошибка",
+                                    message: message,
+                                    buttonText: "Попробовать ещё раз") { [weak self] in
+            guard let self = self else { return }
+            self.currentQuestionIndex = 0
+            self.correctAnswer = 0
+            self.questionFactory?.requestNextQuestion()
+            print("hello world")
+        }
+        alertPresenterDelegate?.show(model: alertModel)    }
+    
     private func getMovieData() {
         let fileManager = FileManager.default
         var documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
         let fileName = "inception.json"
-
+        
         documentsURL.appendPathComponent(fileName)
         
         let jsonString = try? String(contentsOf: documentsURL)
@@ -83,15 +119,15 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        let questionStep = QuizStepViewModel(image: UIImage(named: model.image) ?? UIImage(), quistion: model.text,
-                                             quistionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
+        let questionStep = QuizStepViewModel(image: UIImage(data: model.image) ?? UIImage(),                                               question: model.text,
+                                             questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
         return questionStep
     }
     
     private func show(quiz step: QuizStepViewModel) {
-        indexLabel.text = step.quistionNumber
+        indexLabel.text = step.questionNumber
         previewImage.image = step.image
-        questionLabel.text = step.quistion
+        questionLabel.text = step.question
     }
     
     private func showAnswerResult(isCorrect: Bool) {
@@ -142,7 +178,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             assertionFailure("error message")
             return ""
         }
-        
         let totalPlaysCountLine = "Количество сыгранных квизов: \(statisticService.gamesCount)"
         let currentGameResultLine = "Ваш результат: \(correctAnswer)/\(questionsAmount)"
         let bestGameInfoLine = "Рекорд: \(bestGame.correct)/\(bestGame.total)"
@@ -150,7 +185,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         let averageAccuracyLine = "Средняя точность: \(String(format: "%.2f", statisticService.totalAccuracy))%"
         let resultMessage = [
             currentGameResultLine, totalPlaysCountLine, bestGameInfoLine, averageAccuracyLine].joined(separator: "\n")
-
+        
         return resultMessage
     }
     
