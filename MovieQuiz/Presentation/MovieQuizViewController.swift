@@ -39,7 +39,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         return .lightContent
     }
     
-    //IM Actions Methods
+    //MARK: Actions Methods
     @IBAction private func noButtonClicked(_ sender: Any) {
         answerGiven(answer: false)
     }
@@ -50,9 +50,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     
     //MARK: Public Methods
     func didLoadDataFromServer() {
-        activityIndicator.isHidden = true
-        noButtonOutlet.isEnabled = false
-        yesButtonOutlet.isEnabled = false
+        hideLoadingIndicator(false)
+        isEnabledButtons(false)
         questionFactory?.requestNextQuestion()
     }
     
@@ -74,29 +73,22 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     
-    //MARK: - Privates Methods
-    
-    private func showLoadingIndicator() {
-            self.activityIndicator.isHidden = false
-            self.activityIndicator.startAnimating()
-    }
-    
-    private func hideLoadingIndicator() {
-        activityIndicator.isHidden = true
-    }
-    
+    //MARK: - Privaties Methods
     private func showNetworkError(message: String) {
-        hideLoadingIndicator()
         let alertModel = AlertModel(title: "Ошибка",
                                     message: message,
                                     buttonText: "Попробовать ещё раз") { [weak self] in
             guard let self = self else { return }
             self.currentQuestionIndex = 0
             self.correctAnswer = 0
+            self.questionFactory?.loadData()
             self.questionFactory?.requestNextQuestion()
+            
         }
-        alertPresenterDelegate?.show(model: alertModel)    }
+        alertPresenterDelegate?.show(model: alertModel)
+    }
     
+    //MARK: Get Data
     private func getMovieData() {
         let fileManager = FileManager.default
         var documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first!
@@ -119,15 +111,16 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         }
     }
     
+    //MARK: Convert
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(image: UIImage(data: model.image) ?? UIImage(),                                               question: model.text,
                                              questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
         return questionStep
     }
     
+    //MARK: Show Result
     private func show(quiz step: QuizStepViewModel) {
-        noButtonOutlet.isEnabled = true
-        yesButtonOutlet.isEnabled = true
+        isEnabledButtons(true)
         activityIndicator.isHidden = true
         indexLabel.text = step.questionNumber
         previewImage.image = step.image
@@ -135,8 +128,7 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func showAnswerResult(isCorrect: Bool) {
-        noButtonOutlet.isEnabled.toggle()
-        yesButtonOutlet.isEnabled.toggle()
+        isEnabledButtons(false)
         if isCorrect { correctAnswer += 1 }
         previewImage.layer.masksToBounds = true
         previewImage.layer.borderWidth = 8
@@ -147,8 +139,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             guard let self = self else { return }
             // код, который мы хотим вызвать через 1 секунду
             self.showNextQuestionOrResults()
-            self.noButtonOutlet.isEnabled.toggle()
-            self.yesButtonOutlet.isEnabled.toggle()
         }
     }
     
@@ -156,10 +146,11 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         if currentQuestionIndex == questionsAmount - 1 {
             showFinalResults()
         } else {
+            isEnabledButtons(false)
             previewImage.layer.borderWidth = 0
             currentQuestionIndex += 1
             previewImage.image = nil
-            activityIndicator.isHidden = false
+            hideLoadingIndicator(false)
             questionFactory?.requestNextQuestion()
         }
     }
@@ -193,6 +184,20 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             currentGameResultLine, totalPlaysCountLine, bestGameInfoLine, averageAccuracyLine].joined(separator: "\n")
         
         return resultMessage
+    }
+
+    //MARK: helper methods
+    private func isEnabledButtons(_ isEnabled: Bool) {
+        noButtonOutlet.isEnabled = isEnabled
+        yesButtonOutlet.isEnabled = isEnabled
+    }
+    
+    private func showLoadingIndicator() {
+            self.activityIndicator.startAnimating()
+    }
+    
+    private func hideLoadingIndicator(_ hide: Bool) {
+        activityIndicator.isHidden = hide
     }
     
     private func answerGiven(answer: Bool) {
