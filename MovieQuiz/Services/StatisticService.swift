@@ -41,7 +41,6 @@ extension StatisticServiceImpl: StatisticService {
         Double(correct) / Double(total) * 100
     }
     
-    
     var gamesCount: Int {
         get {
             userDefaults.integer(forKey: Keys.gameCount.rawValue)

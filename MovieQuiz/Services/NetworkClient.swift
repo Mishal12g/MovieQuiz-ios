@@ -32,7 +32,6 @@ struct NetworkClient {
         task.resume()
     }
     
-    
     //MARK: Enums
     private enum NetworkError: Error {
         case codeError

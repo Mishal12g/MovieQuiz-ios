@@ -5,36 +5,38 @@
 //  Created by mihail on 26.08.2023.
 //
 
-import Foundation
+import UIKit
 
 final class QuestionFactory: QuestionFactoryProtocol {
     
     //MARK: Privates Properties
-    
     private var movies: [MostPopularMovie] = []
-    private let moviesLoader: MoviesLoading
-    
     private weak var delegate: QuestionFactoryDelegate?
     
+    private let moviesLoader: MoviesLoading
+    
     //MARK: Init
-    init(delegate: QuestionFactoryDelegate, moviesLoader: MoviesLoading) {
+    init(delegate: QuestionFactoryDelegate,
+         moviesLoader: MoviesLoading) {
         self.delegate = delegate
         self.moviesLoader = moviesLoader
     }
     
     //MARK: Public Methods
     func loadData() {
-        
         moviesLoader.loadMovies { [weak self] result in
             DispatchQueue.main.async {
                 guard let self = self else { return }
                 switch result {
                 case .success(let mostPopularMovies):
+                    if mostPopularMovies.errorMessage != "" {
+                        self.delegate?.didFailToLoadData(with: mostPopularMovies.errorMessage)
+                    }
                     self.movies = mostPopularMovies.items
                     self.delegate?.didLoadDataFromServer()
                     
                 case .failure(let error):
-                    self.delegate?.didFailToLoadData(with: error)
+                    self.delegate?.didFailToLoadData(with: error.localizedDescription)
                 }
             }
         }
@@ -54,7 +56,7 @@ final class QuestionFactory: QuestionFactoryProtocol {
                 imageData = try Data(contentsOf: movie.resizedImageURL)
             } catch {
                 print("Failed to load image")
-            }
+        }
             
             let rating = Float(movie.rating) ?? 0
             let text = "Рейтинг этого фильма больше чем 7?"

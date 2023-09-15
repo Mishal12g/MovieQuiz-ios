@@ -15,13 +15,13 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     //MARK: - Private Properties
     private var currentQuestionIndex = 0
     private var correctAnswer = 0
-    private let questionsAmount: Int = 10
     private var questionFactory: QuestionFactoryProtocol?
     private var currentQuestion: QuizQuestion?
     private var alertPresenterDelegate: AlertDelegate?
     private var movie: Movie?
     private var statisticService: StatisticService?
     
+    private let questionsAmount: Int = 10
     
     //MARK: Overrides Methods
     override func viewDidLoad() {
@@ -51,11 +51,13 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     //MARK: Public Methods
     func didLoadDataFromServer() {
         activityIndicator.isHidden = true
+        noButtonOutlet.isEnabled = false
+        yesButtonOutlet.isEnabled = false
         questionFactory?.requestNextQuestion()
     }
     
-    func didFailToLoadData(with error: Error) {
-        showNetworkError(message: error.localizedDescription)
+    func didFailToLoadData(with error: String) {
+        showNetworkError(message: error)
     }
     
     
@@ -75,8 +77,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     //MARK: - Privates Methods
     
     private func showLoadingIndicator() {
-        activityIndicator.isHidden = false
-        activityIndicator.startAnimating()
+            self.activityIndicator.isHidden = false
+            self.activityIndicator.startAnimating()
     }
     
     private func hideLoadingIndicator() {
@@ -92,7 +94,6 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
             self.currentQuestionIndex = 0
             self.correctAnswer = 0
             self.questionFactory?.requestNextQuestion()
-            print("hello world")
         }
         alertPresenterDelegate?.show(model: alertModel)    }
     
@@ -125,6 +126,9 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     private func show(quiz step: QuizStepViewModel) {
+        noButtonOutlet.isEnabled = true
+        yesButtonOutlet.isEnabled = true
+        activityIndicator.isHidden = true
         indexLabel.text = step.questionNumber
         previewImage.image = step.image
         questionLabel.text = step.question
@@ -154,6 +158,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         } else {
             previewImage.layer.borderWidth = 0
             currentQuestionIndex += 1
+            previewImage.image = nil
+            activityIndicator.isHidden = false
             questionFactory?.requestNextQuestion()
         }
     }

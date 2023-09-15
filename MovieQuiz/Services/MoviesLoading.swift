@@ -12,6 +12,7 @@ protocol MovieLoading {
 }
 
 struct MoviesLoading: MovieLoading {
+
     //MARK: NetworClient
     private let networkClient = NetworkClient()
     
