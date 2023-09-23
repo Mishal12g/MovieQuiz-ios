@@ -51,7 +51,7 @@ extension StatisticServiceImpl: StatisticService {
         }
     }
     
-    var correct: Int {
+    private var correct: Int {
         get {
             userDefaults.integer(forKey: Keys.correct.rawValue)
         }
@@ -61,7 +61,7 @@ extension StatisticServiceImpl: StatisticService {
         }
     }
     
-    var total: Int {
+    private var total: Int {
         get {
             userDefaults.integer(forKey: Keys.total.rawValue)
         }
