@@ -31,7 +31,21 @@ final class MovieQuizPresenter {
     func answerGiven(answer: Bool) {
         guard let currentQuestion = currentQuestion else { return }
         let givenAnswer = answer
+        
         viewController?.showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+    }
+    
+    //MARK: QuestionFactoryDelegat
+    func didReceiveNextQuestion(question: QuizQuestion?) {
+        guard let question = question else {
+            return
+        }
+        
+        currentQuestion = question
+        let viewModel = convert(model: question)
+        DispatchQueue.main.async { [weak self] in
+            self?.viewController?.show(quiz: viewModel)
+        }
     }
     
     //MARK: CurrentIndex
