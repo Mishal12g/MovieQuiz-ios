@@ -7,21 +7,30 @@
 
 import UIKit
 
-final class MovieQuizPresenter {
+final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     //MARK: Public Property
     let questionsAmount: Int = 10
     
-    var questionFactory: QuestionFactoryProtocol?
     var currentQuestion: QuizQuestion?
     var alertPresenterDelegate: AlertDelegate?
     var correctAnswer = 0
     var statisticService: StatisticService?
-    weak var viewController: MovieQuizViewController?
-
     
     //MARK: Privaties Property
     private var currentQuestionIndex: Int = 0
+    private weak var viewController: MovieQuizViewController?
+    private var questionFactory: QuestionFactoryProtocol?
+    
+    //MARK: INIT
+    init(viewController: MovieQuizViewController) {
+        self.viewController = viewController
+        alertPresenterDelegate = AlertPresenter(delegate: viewController)
+        statisticService = StatisticServiceImpl()
+        questionFactory = QuestionFactory(delegate: self, moviesLoader: MoviesLoading())
+        questionFactory?.loadData()
+        viewController.showLoadingIndicator()
+    }
     
     //MARK: Public Methods
     //MARK: Show results or Question
@@ -53,7 +62,7 @@ final class MovieQuizPresenter {
         viewController?.showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
     
-    //MARK: QuestionFactoryDelegat
+    //MARK: QuestionFactoryDelegate
     func didReceiveNextQuestion(question: QuizQuestion?) {
         guard let question = question else {
             return
@@ -66,6 +75,16 @@ final class MovieQuizPresenter {
         }
     }
     
+    func didLoadDataFromServer() {
+        viewController?.hideLoadingIndicator(false)
+        viewController?.isEnabledButtons(false)
+        questionFactory?.requestNextQuestion()
+    }
+    
+    func didFailToLoadData(with error: String) {
+        viewController?.showNetworkError(message: error)
+    }
+    
     //MARK: CurrentIndex
     func isLastQuestion() -> Bool {
         currentQuestionIndex == questionsAmount - 1
@@ -74,6 +93,7 @@ final class MovieQuizPresenter {
     func restartGame() {
         currentQuestionIndex = 0
         correctAnswer = 0
+        questionFactory?.requestNextQuestion()
     }
     
     func switchToNextQuestion() {
@@ -117,7 +137,7 @@ final class MovieQuizPresenter {
         
         return resultMessage
     }
-
+    
     //MARK: Convert
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(image: UIImage(data: model.image) ?? UIImage(),                                               question: model.text,

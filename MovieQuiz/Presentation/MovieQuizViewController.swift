@@ -1,6 +1,6 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
+final class MovieQuizViewController: UIViewController {
     
     //MARK: - IB Outlets
     @IBOutlet private weak var indexLabel: UILabel!
@@ -11,19 +11,15 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     @IBOutlet private weak var activityIndicator: UIActivityIndicatorView!
     
     //MARK: - Private Properties
-    private let presenter = MovieQuizPresenter()
+    private var presenter: MovieQuizPresenter!
     private var movie: Movie?
     
     //MARK: Overrides Methods
     override func viewDidLoad() {
         super.viewDidLoad()
         previewImage.layer.cornerRadius = 20
-        presenter.questionFactory = QuestionFactory(delegate: self, moviesLoader: MoviesLoading())
-        presenter.alertPresenterDelegate = AlertPresenter(delegate: self)
-        presenter.statisticService = StatisticServiceImpl()
+        presenter = MovieQuizPresenter(viewController: self)
         showLoadingIndicator()
-        presenter.questionFactory?.loadData()
-        presenter.viewController = self
     }
     
     override var preferredStatusBarStyle: UIStatusBarStyle {
@@ -40,31 +36,14 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
     }
     
     //MARK: Public Methods
-    //MARK: Delegats
-    func didLoadDataFromServer() {
-        hideLoadingIndicator(false)
-        isEnabledButtons(false)
-        presenter.questionFactory?.requestNextQuestion()
-    }
     
-    func didFailToLoadData(with error: String) {
-        showNetworkError(message: error)
-    }
-    
-    func didReceiveNextQuestion(question: QuizQuestion?) {
-        presenter.didReceiveNextQuestion(question: question)
-    }
-
     //MARK: - Privaties Methods
-    private func showNetworkError(message: String) {
+    func showNetworkError(message: String) {
         let alertModel = AlertModel(title: "Ошибка",
                                     message: message,
                                     buttonText: "Попробовать ещё раз") { [weak self] in
             guard let self = self else { return }
             self.presenter.restartGame()
-            self.presenter.questionFactory?.loadData()
-            self.presenter.questionFactory?.requestNextQuestion()
-            
         }
         presenter.alertPresenterDelegate?.show(model: alertModel)
     }
@@ -131,8 +110,8 @@ final class MovieQuizViewController: UIViewController, QuestionFactoryDelegate {
         yesButtonOutlet.isEnabled = isEnabled
     }
     
-    private func showLoadingIndicator() {
-            self.activityIndicator.startAnimating()
+    func showLoadingIndicator() {
+        self.activityIndicator.startAnimating()
     }
     
     func hideLoadingIndicator(_ hide: Bool) {
