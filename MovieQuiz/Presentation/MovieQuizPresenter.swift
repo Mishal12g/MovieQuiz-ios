@@ -17,20 +17,21 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private var correctAnswer = 0
     private var statisticService: StatisticService?
     private var currentQuestionIndex: Int = 0
-    private weak var viewController: MovieQuizViewController?
+    private weak var viewController: MovieQuizViewControllerProtocol?
     private var questionFactory: QuestionFactoryProtocol?
+    private weak var controllerUIView: MovieQuizViewController?
     
     //MARK: INIT
-    init(viewController: MovieQuizViewController) {
+    init(viewController: MovieQuizViewControllerProtocol) {
         self.viewController = viewController
-        alertPresenterDelegate = AlertPresenter(delegate: viewController)
+        alertPresenterDelegate = AlertPresenter(delegate: self.viewController as? UIViewController)
         statisticService = StatisticServiceImpl()
         questionFactory = QuestionFactory(delegate: self, moviesLoader: MoviesLoading())
         questionFactory?.loadData()
         viewController.showLoadingIndicator()
     }
     
-    //MARK: Public Methods
+    //MARK: Public Methods    
     //MARK: Buttons yes/no
     func yesButtonClicked() {
         answerGiven(answer: true)
@@ -92,7 +93,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
                                     message: message,
                                     buttonText: "Попробовать ещё раз") { [weak self] in
             guard let self = self else { return }
-            restartGame()
+            self.restartGame()
         }
         alertPresenterDelegate?.show(model: alertModel)
     }
@@ -162,7 +163,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     }
     
     //MARK: Convert
-    private func convert(model: QuizQuestion) -> QuizStepViewModel {
+     func convert(model: QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(image: UIImage(data: model.image) ?? UIImage(),
                                              question: model.text,
                                              questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")

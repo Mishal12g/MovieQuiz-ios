@@ -17,7 +17,6 @@ final class AlertPresenter {
 
 extension AlertPresenter: AlertDelegate {
     
-    
     func show(model: AlertModel?) {
         guard let model = model else { return }
         let alert = UIAlertController(title: model.title,
@@ -29,13 +28,9 @@ extension AlertPresenter: AlertDelegate {
             model.completion()
         }
         
-        
-        
         alert.addAction(action)
         delegate?.present(alert, animated: true)
         
     }
-    
-    
 }
 

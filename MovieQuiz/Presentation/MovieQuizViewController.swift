@@ -1,7 +1,7 @@
 import UIKit
 
-final class MovieQuizViewController: UIViewController {
-    
+final class MovieQuizViewController: UIViewController, MovieQuizViewControllerProtocol {
+
     //MARK: - IB Outlets
     @IBOutlet private weak var indexLabel: UILabel!
     @IBOutlet private weak var questionLabel: UILabel!
