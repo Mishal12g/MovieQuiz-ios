@@ -9,15 +9,13 @@ import UIKit
 
 final class MovieQuizPresenter: QuestionFactoryDelegate {
     
-    //MARK: Public Property
-    let questionsAmount: Int = 10
-    
-    var currentQuestion: QuizQuestion?
-    var alertPresenterDelegate: AlertDelegate?
-    var correctAnswer = 0
-    var statisticService: StatisticService?
-    
     //MARK: Privaties Property
+    private let questionsAmount: Int = 10
+    
+    private var alertPresenterDelegate: AlertDelegate?
+    private var currentQuestion: QuizQuestion?
+    private var correctAnswer = 0
+    private var statisticService: StatisticService?
     private var currentQuestionIndex: Int = 0
     private weak var viewController: MovieQuizViewController?
     private var questionFactory: QuestionFactoryProtocol?
@@ -33,19 +31,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     }
     
     //MARK: Public Methods
-    //MARK: Show results or Question
-    func showNextQuestionOrResults(){
-        if isLastQuestion() {
-            showFinalResults()
-        } else {
-            viewController?.isEnabledButtons(false)
-            viewController?.waitLoadImage()
-            switchToNextQuestion()
-            viewController?.hideLoadingIndicator(false)
-            questionFactory?.requestNextQuestion()
-        }
-    }
-    
     //MARK: Buttons yes/no
     func yesButtonClicked() {
         answerGiven(answer: true)
@@ -53,13 +38,6 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     
     func noButtonClicked() {
         answerGiven(answer: false)
-    }
-    
-    func answerGiven(answer: Bool) {
-        guard let currentQuestion = currentQuestion else { return }
-        let givenAnswer = answer
-        
-        viewController?.showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
     
     //MARK: QuestionFactoryDelegate
@@ -82,32 +60,56 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     }
     
     func didFailToLoadData(with error: String) {
-        viewController?.showNetworkError(message: error)
+        showNetworkError(message: error)
     }
-    
+        
+    //MARK: Privaties Methods
     //MARK: CurrentIndex
-    func isLastQuestion() -> Bool {
+    private func isLastQuestion() -> Bool {
         currentQuestionIndex == questionsAmount - 1
     }
     
-    func restartGame() {
+    private func restartGame() {
         currentQuestionIndex = 0
         correctAnswer = 0
         questionFactory?.requestNextQuestion()
     }
     
-    func switchToNextQuestion() {
+    private func switchToNextQuestion() {
         currentQuestionIndex += 1
     }
     
-    func didAnswer(isCorrectAnswer: Bool) {
+    private func didAnswer(isCorrectAnswer: Bool) {
         if isCorrectAnswer {
             correctAnswer += 1
         }
     }
+
     
-    //MARK: Privaties Methods
-    //MARK: Show Results
+    //MARK: Shows Methods
+    private func showNetworkError(message: String) {
+        let alertModel = AlertModel(title: "Ошибка",
+                                    message: message,
+                                    buttonText: "Попробовать ещё раз") { [weak self] in
+            guard let self = self else { return }
+            restartGame()
+        }
+        alertPresenterDelegate?.show(model: alertModel)
+    }
+    
+    private func showAnswerResult(isCorrect: Bool) {
+        viewController?.isEnabledButtons(false)
+        didAnswer(isCorrectAnswer: isCorrect)
+        viewController?.highlightImageBorder(isCorrect: isCorrect)
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { [weak self] in
+            guard let self = self else { return }
+            
+            //code that is called after a second
+            self.showNextQuestionOrResults()
+        }
+    }
+    
     private func showFinalResults() {
         statisticService?.store(correct: correctAnswer, total: questionsAmount)
         
@@ -122,6 +124,20 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         alertPresenterDelegate?.show(model: alertModel)
     }
     
+    //Show results or Question
+    private func showNextQuestionOrResults(){
+        if isLastQuestion() {
+            showFinalResults()
+        } else {
+            viewController?.isEnabledButtons(false)
+            viewController?.whileWaitDownloadingImage()
+            switchToNextQuestion()
+            viewController?.hideLoadingIndicator(false)
+            questionFactory?.requestNextQuestion()
+        }
+    }
+    
+    //message data for show result
     private func makeResultMessage() -> String {
         guard let statisticService = statisticService, let bestGame = statisticService.bestGame else {
             assertionFailure("error message")
@@ -137,12 +153,19 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         
         return resultMessage
     }
+
+    private func answerGiven(answer: Bool) {
+        guard let currentQuestion = currentQuestion else { return }
+        let givenAnswer = answer
+        
+        showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
+    }
     
     //MARK: Convert
     private func convert(model: QuizQuestion) -> QuizStepViewModel {
-        let questionStep = QuizStepViewModel(image: UIImage(data: model.image) ?? UIImage(),                                               question: model.text,
+        let questionStep = QuizStepViewModel(image: UIImage(data: model.image) ?? UIImage(),
+                                             question: model.text,
                                              questionNumber: "\(currentQuestionIndex + 1)/\(questionsAmount)")
         return questionStep
     }
-    
 }
