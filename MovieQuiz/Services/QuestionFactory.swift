@@ -9,20 +9,22 @@ import UIKit
 
 final class QuestionFactory: QuestionFactoryProtocol {
     
-    //MARK: Privates Properties
+    //MARK: - Privates Properties
+    private let questionsNums: [Float] = [8.3, 6.6, 7, 9, 8.4, 8, 6.8, 9.3, 7.1, 6.3, 8.4, 8.9, 7.4, 8.2]
     private var movies: [MostPopularMovie] = []
+    
     private weak var delegate: QuestionFactoryDelegate?
     
     private let moviesLoader: MoviesLoading
     
-    //MARK: Init
+    //MARK: - Init
     init(delegate: QuestionFactoryDelegate,
          moviesLoader: MoviesLoading) {
         self.delegate = delegate
         self.moviesLoader = moviesLoader
     }
     
-    //MARK: Public Methods
+    //MARK: - Public Methods
     func loadData() {
         moviesLoader.loadMovies { [weak self] result in
             DispatchQueue.main.async {
@@ -47,6 +49,9 @@ final class QuestionFactory: QuestionFactoryProtocol {
             guard let self = self else { return }
             
             let index = (0..<self.movies.count).randomElement() ?? 0
+            let indexQuestionRating = questionsNums[(0..<questionsNums.count).randomElement() ?? 0]
+            let isMoreOrLessCounter = (0...1).randomElement()
+            let isMoreOrLess = isMoreOrLessCounter == 0 ? "больше" : "меньше"
             
             guard let movie = self.movies[safe: index] else { return }
             
@@ -62,8 +67,8 @@ final class QuestionFactory: QuestionFactoryProtocol {
             }
             
             let rating = Float(movie.rating) ?? 0
-            let text = "Рейтинг этого фильма больше чем 7?"
-            let correctAnswer = rating > 7
+            let text = "Рейтинг этого фильма \(isMoreOrLess) чем \(indexQuestionRating)?"
+            let correctAnswer = isMoreOrLess == "меньше" ? rating < indexQuestionRating : rating > indexQuestionRating
             
             let question = QuizQuestion(image: imageData, text: text, correctAnswer: correctAnswer)
             
@@ -74,39 +79,3 @@ final class QuestionFactory: QuestionFactoryProtocol {
         }
     }
 }
-
-
-
-
-//    private let questions: [QuizQuestion] =  [
-//        QuizQuestion(image: "The Godfather",
-//                     text: "Рейтинг этого фильма больше чем 6?",
-//                     correctAnswer: true),
-//        QuizQuestion(image: "The Dark Knight",
-//                     text: "Рейтинг этого фильма больше чем 6?",
-//                     correctAnswer: true),
-//        QuizQuestion(image: "Kill Bill",
-//                     text: "Рейтинг этого фильма больше чем 6?",
-//                     correctAnswer: true),
-//        QuizQuestion(image: "The Avengers",
-//                     text: "Рейтинг этого фильма больше чем 6?",
-//                     correctAnswer: true),
-//        QuizQuestion(image: "Deadpool",
-//                     text: "Рейтинг этого фильма больше чем 6?",
-//                     correctAnswer: true),
-//        QuizQuestion(image: "The Green Knight",
-//                     text: "Рейтинг этого фильма больше чем 6?",
-//                     correctAnswer: true),
-//        QuizQuestion(image: "Old",
-//                     text: "Рейтинг этого фильма больше чем 6?",
-//                     correctAnswer: false),
-//        QuizQuestion(image: "The Ice Age Adventures of Buck Wild",
-//                     text: "Рейтинг этого фильма больше чем 6?",
-//                     correctAnswer: false),
-//        QuizQuestion(image: "Tesla",
-//                     text: "Рейтинг этого фильма больше чем 6?",
-//                     correctAnswer: false),
-//        QuizQuestion(image: "Vivarium",
-//                     text: "Рейтинг этого фильма больше чем 6?",
-//                     correctAnswer: false),
-//    ]
