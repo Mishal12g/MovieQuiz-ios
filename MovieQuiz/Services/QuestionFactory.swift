@@ -9,20 +9,21 @@ import UIKit
 
 final class QuestionFactory: QuestionFactoryProtocol {
     
-    //MARK: Privates Properties
+    //MARK: - Privates Properties
     private var movies: [MostPopularMovie] = []
+    
     private weak var delegate: QuestionFactoryDelegate?
     
     private let moviesLoader: MoviesLoading
     
-    //MARK: Init
+    //MARK: - Init
     init(delegate: QuestionFactoryDelegate,
          moviesLoader: MoviesLoading) {
         self.delegate = delegate
         self.moviesLoader = moviesLoader
     }
     
-    //MARK: Public Methods
+    //MARK: - Public Methods
     func loadData() {
         moviesLoader.loadMovies { [weak self] result in
             DispatchQueue.main.async {

@@ -15,13 +15,13 @@ protocol StatisticService {
 }
 
 final class StatisticServiceImpl {
-    //MARK: Privates Properties
+    //MARK: - Privates Properties
     private let userDefaults: UserDefaults
     private let encoder: JSONEncoder
     private let decoder: JSONDecoder
     private let dateProvider: () -> Date
     
-    //MARK: Init
+    //MARK: - Init
     init(userDefaults: UserDefaults = .standard,
          encoder: JSONEncoder = JSONEncoder(),
          decoder: JSONDecoder = JSONDecoder(),
@@ -36,7 +36,7 @@ final class StatisticServiceImpl {
 
 extension StatisticServiceImpl: StatisticService {
     
-    //MARK: Public Properties
+    //MARK: - Public Properties
     var totalAccuracy: Double {
         Double(correct) / Double(total) * 100
     }
@@ -89,7 +89,7 @@ extension StatisticServiceImpl: StatisticService {
         }
     }
     
-    //MARK: Public Methods
+    //MARK: - Public Methods
     func store(correct count: Int, total amount: Int) {
         self.correct = count
         self.total = amount
@@ -107,7 +107,7 @@ extension StatisticServiceImpl: StatisticService {
         }
     }
     
-    //MARK: Private Enum
+    //MARK: - Private Enum
     private enum Keys: String {
         case correct, total, bestGame, gameCount
     }

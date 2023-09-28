@@ -13,7 +13,7 @@ protocol NetworkRouting {
 
 struct NetworkClient: NetworkRouting {
     
-    //MARK: PUBLIC METHODS
+    //MARK: - Public methods
     func fetch(url: URL, handler: @escaping (Result<Data, Error>) -> Void) {
         let request = URLRequest(url: url)
         

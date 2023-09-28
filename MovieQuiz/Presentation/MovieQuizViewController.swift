@@ -13,7 +13,7 @@ final class MovieQuizViewController: UIViewController, MovieQuizViewControllerPr
     //MARK: - Private Properties
     private var presenter: MovieQuizPresenter!
     
-    //MARK: Overrides Methods
+    //MARK: - Overrides Methods
     override func viewDidLoad() {
         super.viewDidLoad()
         questionLabel.text = nil

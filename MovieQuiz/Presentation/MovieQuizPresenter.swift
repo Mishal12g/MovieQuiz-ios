@@ -9,7 +9,7 @@ import UIKit
 
 final class MovieQuizPresenter: QuestionFactoryDelegate {
     
-    //MARK: Privaties Property
+    //MARK: - Privates Properties
     private let questionsAmount: Int = 10
     
     private var alertPresenterDelegate: AlertDelegate?
@@ -17,11 +17,11 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     private var correctAnswer = 0
     private var statisticService: StatisticService?
     private var currentQuestionIndex: Int = 0
-    private weak var viewController: MovieQuizViewControllerProtocol?
     private var questionFactory: QuestionFactoryProtocol?
     private weak var controllerUIView: MovieQuizViewController?
+    private weak var viewController: MovieQuizViewControllerProtocol?
     
-    //MARK: INIT
+    //MARK: - INIT
     init(viewController: MovieQuizViewControllerProtocol) {
         self.viewController = viewController
         alertPresenterDelegate = AlertPresenter(delegate: self.viewController as? UIViewController)
@@ -31,8 +31,8 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         viewController.showLoadingIndicator()
     }
     
-    //MARK: Public Methods    
-    //MARK: Buttons yes/no
+    //MARK: - Public Methods
+    //MARK: - Buttons yes/no
     func yesButtonClicked() {
         answerGiven(answer: true)
     }
@@ -41,7 +41,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         answerGiven(answer: false)
     }
     
-    //MARK: QuestionFactoryDelegate
+    //MARK: - QuestionFactoryDelegate
     func didReceiveNextQuestion(question: QuizQuestion?) {
         guard let question = question else {
             return
@@ -49,6 +49,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         
         currentQuestion = question
         let viewModel = convert(model: question)
+        
         DispatchQueue.main.async { [weak self] in
             self?.viewController?.show(quiz: viewModel)
         }
@@ -64,8 +65,8 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         showNetworkError(message: error)
     }
         
-    //MARK: Privaties Methods
-    //MARK: CurrentIndex
+    //MARK: - Privates methods
+    //MARK: - CurrentIndex
     private func isLastQuestion() -> Bool {
         currentQuestionIndex == questionsAmount - 1
     }
@@ -87,7 +88,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
     }
 
     
-    //MARK: Shows Methods
+    //MARK: - Shows Methods
     private func showNetworkError(message: String) {
         let alertModel = AlertModel(title: "Ошибка",
                                     message: message,
@@ -162,7 +163,7 @@ final class MovieQuizPresenter: QuestionFactoryDelegate {
         showAnswerResult(isCorrect: givenAnswer == currentQuestion.correctAnswer)
     }
     
-    //MARK: Convert
+    //MARK: - Convert
      func convert(model: QuizQuestion) -> QuizStepViewModel {
         let questionStep = QuizStepViewModel(image: UIImage(data: model.image) ?? UIImage(),
                                              question: model.text,
